@@ -1,46 +1,221 @@
-const tasks = [
-  {
-    id: 1,
-    completed: false,
-    title: 'argue with the alarm clock',
-    description: 'hit snooze at least 5 times and still be late',
-    dueDate: '03/01/2024',
-    dateCreated: new Date(Date.now()).toLocaleDateString(),
-  },
-  {
-    id: 2,
-    completed: true,
-    title: 'pretend to be productive',
-    description: 'open laptop and stare at screen dramatically',
-    dueDate: '07/01/2024',
-    dateCreated: new Date(Date.now()).toLocaleDateString(),
-  },
-  {
-    id: 3,
-    completed: false,
-    title: 'look for lost sock',
-    description: 'accept that it no longer exists',
-    dueDate: '06/01/2024',
-    dateCreated: new Date(Date.now()).toLocaleDateString(),
-  },
-  {
-    id: 4,
-    completed: true,
-    title: 'reward myself',
-    description: 'drink beer because life is hard',
-    dueDate: '04/01/2024',
-    dateCreated: new Date(Date.now()).toLocaleDateString(),
-  },
-];
-// Global Variables
+// =========================================
+// API CONFIGURATION
+// =========================================
 
+const API_URL = 'http://localhost:3000';
+
+// =========================================
+// Protect Dashboard.html
+// =========================================
+
+if (!localStorage.getItem('token')) {
+  window.location.href = './login.html';
+}
+
+// =========================================
+// DOM ELEMENTS
+// =========================================
 const taskForm = document.getElementById('taskForm');
 const toDoList = document.getElementById('toDoList');
 const completedList = document.getElementById('completedList');
 
-// Event Listeners (triggers)
+// =========================================
+// AUTH HELPER FUNCTIONS
+// =========================================
 
-// to create a new task
+const getAuthHeaders = () => ({
+  'Content-Type': 'application/json',
+  Authorization: `Bearer ${localStorage.getItem('token')}`,
+});
+
+const getUserFromToken = () => {
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+  try {
+    return JSON.parse(atob(token.split('.')[1]));
+  } catch {
+    return null;
+  }
+};
+
+// =========================================
+// HELPER FUNCTIONS
+// =========================================
+
+const formatTask = (task) => {
+  const li = document.createElement('li');
+  li.classList.add('card', 'p-3', 'shadow-sm', 'mt-2');
+
+  const done = task.completed ? 'text-decoration-line-through opacity-50' : ''; // Class list if task is completed or not
+
+  li.innerHTML = `
+      <div class="d-flex justify-content-between align-items-start">
+        <h4 class="${done} col-11">${task.title}</h4>
+        <button data-id="${task._id}" type="button" class="btn-close delete" aria-label="Close"></button>
+      </div>
+      <p class="${done}">${task.description}</p>
+      <p class="${done}"><strong>Due: </strong>${task.dueDate}</p>
+      <div class="d-flex justify-content-between align-items-end">
+        <div>
+          ${
+            task.completed
+              ? `<button data-id="${task._id}" class="btn btn-primary shadow-sm notDone" type="button">Make incomplete</button>`
+              : `
+              <button data-id="${task._id}" class="btn btn-primary shadow-sm done" type="button">Make complete</button>
+            `
+          }
+        </div>
+        <p class="m-0 ${done}"><strong>Created on: </strong>${task.dateCreated}</p>
+      </div>
+    `;
+  return li;
+};
+
+// =========================================
+// FETCH ALL TASKS
+// =========================================
+
+const displayTasks = async () => {
+  try {
+    const response = await fetch(`${API_URL}/tasks`, {
+      headers: getAuthHeaders(),
+    });
+
+    const tasks = await response.json();
+
+    toDoList.innerHTML = '';
+    completedList.innerHTML = '';
+
+    tasks.forEach((task) => {
+      const formattedTask = formatTask(task);
+      task.completed
+        ? completedList.appendChild(formattedTask)
+        : toDoList.appendChild(formattedTask);
+    });
+
+    console.log('Tasks loaded from server:', tasks.length);
+  } catch (error) {
+    console.error('Error fetching tasks:', error);
+    toDoList.innerHTML = `
+            <li class="card p-3 shadow-sm mt-2 text-center text-danger">
+                <p class="m-0">Error loading tasks. Is the server running?</p>
+            </li>
+    `;
+  }
+};
+
+// ========================================================
+//  CREATE NEW TASK
+// ========================================================
+const createNewTask = async () => {
+  const title = taskForm.taskName.value.trim();
+  const description = taskForm.taskDescription.value.trim();
+  const dueDate = taskForm.dueDate.value;
+
+  if (!title) {
+    alert('Please enter a task name');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/tasks`, {
+      method: 'POST',
+      headers: getAuthHeaders(), // headers = metadata that we provide to the server
+      body: JSON.stringify({
+        title: title,
+        description: description,
+        dueDate: dueDate,
+      }),
+    });
+
+    if (!response.ok) {
+      // ok = it's okay we have an error, we will handle it with our code
+      throw new Error('Failed to create task');
+    }
+
+    const newTask = await response.json();
+    console.log('Task created:', newTask);
+
+    taskForm.reset();
+    displayTasks();
+  } catch (error) {
+    console.error('Error creating task:', error);
+    alert('Error creating this task');
+  }
+};
+// ========================================================
+// MAKE TASK COMPLETE
+// ========================================================
+
+const completeTask = async (taskId) => {
+  try {
+    const response = await fetch(`${API_URL}/tasks/${taskId}/complete`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update this task');
+    }
+
+    console.log('Task marked complete:', taskId);
+    displayTasks();
+  } catch (error) {
+    console.error('Error marking task complete:', error);
+    alert('Error updating task');
+  }
+};
+
+// ========================================================
+// MAKE TASK INCOMPLETE
+// ========================================================
+
+const taskNotCompleted = async (taskId) => {
+  try {
+    const response = await fetch(`${API_URL}/tasks/${taskId}/incomplete`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update this task');
+    }
+
+    console.log('Task marked incomplete:', taskId);
+    displayTasks();
+  } catch (error) {
+    console.error('Error marking task incomplete:', error);
+    alert('Error updating task');
+  }
+};
+
+// ========================================================
+// DELETE TASK
+// ========================================================
+
+const deleteTask = async (taskId) => {
+  try {
+    const response = await fetch(`${API_URL}/tasks/${taskId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to delete this task');
+    }
+
+    console.log('Task deleted:', taskId);
+    displayTasks();
+  } catch (error) {
+    console.error('Error deleting task:', error);
+    alert('Error deleting task');
+  }
+};
+
+// ========================================================
+// EVENT LISTENERS
+// ========================================================
+
 taskForm.addEventListener('submit', (event) => {
   event.preventDefault();
   createNewTask();
@@ -64,86 +239,25 @@ taskForm.addEventListener('submit', (event) => {
   });
 });
 
-// Functions
+// ========================================================
+// INITIALISATION
+// ========================================================
 
-function displayTasks() {
-  function formatTask(task) {
-    const li = document.createElement('li');
+displayTasks();
+console.log('Dashboard initialised - connected to:', API_URL);
 
-    li.classList.add('card', 'p-3', 'shadow-sm', 'mt-2');
-    const done = task.completed
-      ? 'text-decoration-line-through opacity-50'
-      : ''; // Class list if task is completed or not
-    li.innerHTML = `
-      <div class="d-flex justify-content-between align-items-start">
-        <h4 class="${done} col-11">${task.title}</h4>
-        <button data-id="${task.id}" type="button" class="btn-close delete" aria-label="Close"></button>
-      </div>
-      <p class="${done}">${task.description}</p>
-      <p class="${done}"><strong>Due: </strong>${task.dueDate}</p>
-      <div class="d-flex justify-content-between align-items-end">
-        <div>
-          ${
-            task.completed
-              ? `<button data-id="${task.id}" class="btn btn-primary shadow-sm notDone" type="button">Not done</button>`
-              : `
-              <button data-id="${task.id}" class="btn btn-primary shadow-sm edit" type="button">Edit</button>
-              <button data-id="${task.id}" class="btn btn-primary shadow-sm done" type="button">Done</button>
-            `
-          }
-        </div>
-        <p class="m-0 ${done}"><strong>Created on: </strong>${task.dateCreated}</p>
-      </div>
-    `;
-    return li;
+const logout = () => {
+  localStorage.removeItem('token');
+  window.location.href = './login.html';
+};
+
+const greetingElement = document.getElementById('greeting');
+
+const loadUserGreeting = () => {
+  const user = getUserFromToken();
+  if (user && greetingElement) {
+    greetingElement.textContent = `Welcome back, ${user.name}`;
   }
+};
 
-  toDoList.innerHTML = '';
-  completedList.innerHTML = '';
-
-  tasks.forEach((task) => {
-    const formattedTask = formatTask(task);
-    task.completed
-      ? completedList.appendChild(formattedTask)
-      : toDoList.appendChild(formattedTask);
-  });
-  resetForm();
-}
-
-function createNewTask() {
-  const taskDetails = {
-    id: 5,
-    title: taskForm.taskName.value.trim(),
-    description: taskForm.taskDescription.value.trim(),
-    dueDate: taskForm.dueDate.value,
-    dateCreated: new Date(Date.now()).toLocaleDateString(),
-    completed: false,
-  };
-
-  tasks.push(taskDetails);
-  displayTasks();
-}
-
-function completeTask(taskId) {
-  const task = tasks.find((task) => task.id == taskId);
-  if (task) {
-    task.completed = true;
-  }
-  displayTasks();
-}
-
-function taskNotCompleted(taskId) {
-  const task = tasks.find((task) => task.id == taskId);
-  if (task) {
-    task.completed = false;
-  }
-  displayTasks();
-}
-
-function deleteTask(taskId) {
-  const taskIndex = tasks.findIndex((task) => task.id == taskId);
-  if (taskIndex !== -1) {
-    tasks.splice(taskIndex, 1);
-  }
-  displayTasks();
-}
+loadUserGreeting();

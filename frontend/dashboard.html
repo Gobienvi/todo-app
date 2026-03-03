@@ -37,8 +37,7 @@
             width="auto"
           />
         </button>
-        <!-- <div class="collapse navbar-collapse" id="navbarNav"> -->
-        <div class="collapse navbar-collapse">
+        <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
               <a class="nav-link" href="./features.html">Features</a>
@@ -50,9 +49,10 @@
               <a class="nav-link" href="./support.html">Support</a>
             </li>
           </ul>
-          <div class="d-flex gap-2 d-none d-lg-block ms-3">
-            <a class="btn btn-primary" href="./login.html">Login</a>
-            <a class="btn btn-outline-light" href="./signup.html">Sign Up</a>
+          <div class="d-flex align-items-center gap-3 ms-3">
+            <button class="btn btn-outline-light" onclick="logout()">
+              Log out
+            </button>
           </div>
         </div>
       </div>
@@ -86,8 +86,7 @@
                 rows="7"
                 class="form-control mb-2 shadow-sm"
                 required
-              >
-              </textarea>
+              ></textarea>
 
               <input
                 id="dueDate"
@@ -110,85 +109,15 @@
               </select>
             </div>
 
-            <!-- Tasks (Dummy Data) -->
+            <!-- Tasks -->
             <div class="row text-white">
               <div class="col-12 col-lg-6 mb-4 mb-lg-0">
                 <h2>To Do</h2>
-                <ul id="toDoList" class="list-group">
-                  <li class="card p-3 shadow-sm mt-2">
-                    <div
-                      class="d-flex justify-content-between align-items-start"
-                    >
-                      <h4 class="col-11">Cook Dinner</h4>
-                      <button
-                        type="button"
-                        class="btn-close delete"
-                        aria-label="Close"
-                      ></button>
-                    </div>
-                    <p>Spaghetti Bolognese</p>
-                    <p><strong>Due on: </strong>21/01/2026</p>
-                    <div class="d-flex justify-content-between align-items-end">
-                      <div>
-                        <button
-                          class="btn btn-primary shadow-sm edit"
-                          type="button"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          class="btn btn-primary shadow-sm done"
-                          type="button"
-                        >
-                          Done
-                        </button>
-                      </div>
-                      <p class="m-0">
-                        <strong>Created on: </strong> 20/01/2026
-                      </p>
-                    </div>
-                  </li>
-                </ul>
+                <ul id="toDoList" class="list-group"></ul>
               </div>
-              <div class="col-12 col-lg-6">
+              <div class="col-12 col-lg-6 mb-4 mb-lg-0">
                 <h2>Completed</h2>
-                <ul id="completedList" class="list-group">
-                  <li class="card p-3 shadow-sm mt-2">
-                    <div
-                      class="d-flex justify-content-between align-items-start"
-                    >
-                      <h4
-                        class="opacity-50 text-decoration-line-through col-11"
-                      >
-                        Mow the lawn
-                      </h4>
-                      <button
-                        type="button"
-                        class="btn-close delete"
-                        aria-label="Close"
-                      ></button>
-                    </div>
-                    <p class="opacity-50 text-decoration-line-through">
-                      The grass is knee high
-                    </p>
-                    <p class="opacity-50 text-decoration-line-through">
-                      <strong>Due: </strong>02/10/2025
-                    </p>
-                    <div class="d-flex justify-content-between align-items-end">
-                      <div>
-                        <button
-                          class="btn btn-primary shadow-sm notDone"
-                          type="button"
-                        >
-                          Not Done
-                        </button>
-                      </div>
-                      <p class="m-0 opacity-50 text-decoration-line-through">
-                        <strong>Created on: </strong>26/09/2025
-                      </p>
-                    </div>
-                  </li>
-                </ul>
+                <ul id="completedList" class="list-group"></ul>
               </div>
             </div>
           </div>
