@@ -2,7 +2,7 @@
 // API CONFIGURATION
 // =========================================
 
-const API_URL = 'http://localhost:3000';
+const API_URL = 'https://todo-app-g7xc.onrender.com';
 
 // =========================================
 // Protect Dashboard.html
