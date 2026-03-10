@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000';
+const API_URL = 'https://todo-app-g7xc.onrender.com';
 
 //===================================
 // Helper arrow functions
@@ -13,11 +13,10 @@ const showError = (message) => {
   }
 };
 
-const hideError = (message) => {
+const hideError = () => {
   const element = document.getElementById('errorMessage');
   if (element) {
-    element.textContent = message;
-
+    element.textContent = '';
     element.classList.add('d-none');
   }
 };
@@ -105,7 +104,7 @@ if (loginForm) {
     event.preventDefault();
     hideError();
 
-    const email    = document.getElementById('email').value.trim();
+    const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
 
     if (!email || !password) {
@@ -118,7 +117,7 @@ if (loginForm) {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
       });
       const data = await response.json();
 
@@ -130,7 +129,6 @@ if (loginForm) {
       // Store the JWT — we'll send this with every future task request
       localStorage.setItem('token', data.token);
       window.location.href = './dashboard.html';
-
     } catch (err) {
       showError('Could not connect to the server. Is it running?');
     } finally {

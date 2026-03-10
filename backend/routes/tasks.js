@@ -54,11 +54,10 @@ router.post('/', authenticateToken, async (req, res) => {
 // ===================================================================
 router.patch('/:id/complete', authenticateToken, async (req, res) => {
   try {
-    const task = await Task.findByIdAndUpdate(
-      req.params.id,
+    const task = await Task.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.id },
       { completed: true },
-      // { new: true }, <---- OLD (delete this)
-      { returnDocument: 'after' }, // <---- NEW 
+      { returnDocument: 'after' },
     );
 
     if (!task) {
@@ -78,8 +77,8 @@ router.patch('/:id/complete', authenticateToken, async (req, res) => {
 
 router.patch('/:id/incomplete', authenticateToken, async (req, res) => {
   try {
-    const task = await Task.findByIdAndUpdate(
-      req.params.id,
+    const task = await Task.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.id },
       { completed: false },
       { returnDocument: 'after' },
     );
@@ -100,7 +99,7 @@ router.patch('/:id/incomplete', authenticateToken, async (req, res) => {
 // ===================================================================
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
-    const deletedTask = await Task.findByIdAndDelete(req.params.id);
+    const deletedTask = await Task.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
 
     if (!deletedTask) {
       res.status(404).json({ error: 'Task not found' });
