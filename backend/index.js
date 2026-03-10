@@ -3,8 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import 'dotenv/config';
-import taskRoutes from './routes/tasks.js'
-import userRoutes from './routes/auth.js'
+import taskRoutes from './routes/tasks.js';
+import userRoutes from './routes/auth.js';
 
 // App Setup
 const PORT = process.env.PORT || 3000;
@@ -12,7 +12,13 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: 'https://todo-app-blue-theta-58.vercel.app',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    credentials: true, // Allow requests from this origin
+  }),
+);
 
 // MongoDB Connection
 try {
@@ -24,7 +30,7 @@ try {
 
 // Routes
 app.use('/tasks', taskRoutes); // localhost:3000/tasks
-app.use('/auth', userRoutes) 
+app.use('/auth', userRoutes);
 
 // Start Server
 app.listen(PORT, () => {
